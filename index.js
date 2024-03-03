@@ -1,21 +1,25 @@
 class Example {
-	min = 0;
-	max = 0;
+	minA = 0;
+	minB = 0;
+	maxA = 0;
+	maxB = 0;
 	a = 0;
 	b = 0;
 	c = 0;
-	constructor(min, max) {
-		this.min = min;
-		this.max = max;
+	constructor(minA, maxA, minB, maxB) {
+		this.minA = minA;
+		this.maxA = maxA;
+		this.minB = minB;
+		this.maxB = maxB;
 	}
-	getRandomInt() {
-		const min = Math.ceil(this.min);
-		const max = Math.floor(this.max);
+	getRandomInt(mn, mx) {
+		const min = Math.ceil(mn);
+		const max = Math.floor(mx);
 		return Math.floor(Math.random() * (max - min + 1)) + min;
 	}
 	generate() {
-		this.a = this.getRandomInt();
-		this.b = this.getRandomInt();
+		this.a = this.getRandomInt(this.minA, this.maxA);
+		this.b = this.getRandomInt(this.minB, this.maxB);
 		this.c = this.a + this.b;
 	}
 	check(answer) {
@@ -46,7 +50,6 @@ class Synth {
 			voices.some(voice => {
 				// if (vice.default) {
 				if (voice.lang.includes('en')) {
-					console.log('en vice', voice)
 					this.voice = voice
 					return true
 				}
@@ -59,12 +62,7 @@ class Synth {
 		this.textToSpeak = text;
 		if(this.doesntSupport) return;
 		const utterance = new SpeechSynthesisUtterance(this.textToSpeak)
-		console.log('speak utterance', this)
 		utterance.voice = this.voice
-		// utterance.volume = this.volume
-		// utterance.pitch = this.pitch
-		// utterance.rate = Math.pow(Math.abs(this.rate) + 1, this.rate < 0 ? -1 : 1)
-		debugger;
 		speechSynthesis.speak(utterance)
 	}
 	repeat() {
@@ -98,21 +96,65 @@ class IO {
 		// recognition.start();
 		// recognition.stop();
 	}
-	answer(data) {
-		// convert from number
+	setExample(data) {
 		const ex = `${data.a} + ${data.b}`;
 		if(showNumbers) {
 			document.getElementById('example').innerText = ex;
 		}
 	}
-	result(checked) {
+	setExampleText(data) {
+		const ex = `${writtenNumber(data.a)} + ${writtenNumber(data.b)}`;
+		if(showText) {
+			document.getElementById('example').innerText = ex;
+		}
+	}
+	setResult(checked) {
 		document.getElementById('check').innerText = checked === true ? '🟢' : '🔴 ' + checked
 	}
+	setAllGames(count) {
+		document.getElementById('all-games').innerText = count + ''
+	}
+	setScore(count) {
+		document.getElementById('score').innerText = count + ''
+	}
 }
-let io;
+let io = new IO()
+
+class Score {
+	current = 0
+	getAllGames() {
+		const lsAllGamesScore = localStorage.getItem('all-games-score')
+		const parseScores = lsAllGamesScore ? parseInt(lsAllGamesScore) : 0
+		io.setAllGames(parseScores)
+		return parseScores
+	}
+	upAllGames() {
+		const updatedCount = this.getAllGames() + 1
+		localStorage.setItem('all-games-score', updatedCount)
+		io.setAllGames(updatedCount)
+	}
+	get() {
+		const score = localStorage.getItem('score')
+		const updated = score ? parseInt(score) : 0
+		io.setScore(updated)
+		return updated
+	}
+	set(value) {
+		localStorage.setItem('score', value)
+		io.setScore(value)
+	}
+	up() {
+		this.set(this.get() + 1)
+	}
+	down() {
+		this.set(this.get() - 1)
+	}
+}
+let score = new Score();
 
 let showText = false;
 let showNumbers = false;
+let hasClick = false
 
 function init() {
 	document.getElementById('game').classList.remove('hide');
@@ -120,28 +162,55 @@ function init() {
 	document.getElementById('example').innerText = ''
 	document.getElementById('input').value = ''
 	document.getElementById('input').focus()
-	showNumbers = false
 
-	const min = document.getElementById('min').value
-	const max = document.getElementById('max').value
-	example = new Example(min,max)
+	score.getAllGames()
+	score.get()
+	showNumbers = false
+	hasClick = false
+
+	const minA = document.getElementById('min-a').value
+	const maxA = document.getElementById('max-a').value
+	const minB = document.getElementById('min-b').value
+	const maxB = document.getElementById('max-b').value
+	example = new Example(minA, maxA, minB, maxB)
 	example.generate()
 	const { a, b } = example;
 
-	io = new IO()
-	io.answer({ a, b })
+	io.setExample({ a, b })
 	synth.speak(`${a} + ${b}`)
 }
 
 function onHandleSubmitInput() {
+	if(hasClick) return
 	const value = document.getElementById('input').value
 	const checked = example.check(value)
-	io.result(checked)
+	io.setResult(checked)
 
+	// TODO После текста и считывания голоса сделать логику очков такую:
+	// Ввод Голосом(3), текстом(2) или числами(1)
+	// Вывод Голосом(3), текстом(2) или числами(1)
+	// Пример Прослушали Голосом, ввели Число получили 4 очка
+	// Пример Увидели Число, ввели Текстом получили 3 очка
+	// За проигрыш, какой то минус, потому что в итоге можно ввести цифру из цифры
+	// Но правильный ответ, после проигрыша надо засчитать TODO
+	if(checked === true) {
+		score.up()
+	}
+	else {
+		score.down()
+	}
+	score.upAllGames()
+	hasClick = true
 }
 
 function onHandleShowNumber() {
 	showNumbers = true;
 	const { a, b } = example;
-	io.answer({ a, b })
+	io.setExample({ a, b })
+}
+
+function onHandleShowText() {
+	showText = true;
+	const { a, b } = example;
+	io.setExampleText({ a, b })
 }

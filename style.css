@@ -19,6 +19,17 @@
 .main #game.hide {
   display: none;
 }
+.main #game #score-wrap {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 10px;
+}
+.main #game #score-wrap #all-games:before {
+  content: 'all games ';
+}
+.main #game #score-wrap #score:before {
+  content: 'score ';
+}
 .main #game #repeat-btn {
   font-size: 44px;
 }
@@ -49,9 +60,12 @@
 }
 .main .start .range {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 .main .start .range input {
   padding: 5px 11px;
-  font-size: 30px;
-  width: 160px;
+  font-size: 20px;
+  width: 20%;
+  display: block;
 }

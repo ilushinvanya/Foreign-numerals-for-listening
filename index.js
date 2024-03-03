@@ -225,7 +225,9 @@ function onHandleSubmitInput() {
 
 function onHandleShowText() {
 	showText = true;
-	score.setPoints(1)
+	if(score.getPoints() > 1) {
+		score.setPoints(1)
+	}
 	const { a, b } = example;
 	io.setExampleText({ a, b })
 }
@@ -239,6 +241,6 @@ function onHandleShowNumber() {
 
 function onHandleEnterInput(event) {
 	if (event.key === 'Enter') {
-		onHandleSubmitInput()
+		// onHandleSubmitInput()
 	}
 }

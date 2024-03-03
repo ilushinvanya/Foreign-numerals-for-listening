@@ -11,19 +11,21 @@
 <body>
 
 <div class="main">
+    <div id="score-wrap">
+        <div id="all-games"></div>
+        <div id="score"></div>
+    </div>
     <div id="game" class="hide">
-        <div id="score-wrap">
-            <div id="all-games"></div>
-            <div id="score"></div>
-        </div>
+
         <button id="repeat-btn" onclick="synth.repeat()">🧑🏼‍🦱🗣️🇬🇧</button>
         <button id="show-text" onclick="onHandleShowText()">Show text</button>
         <button id="show-example" onclick="onHandleShowNumber()">Show numbers</button>
         <div id="example"></div>
         <div class="input-wrap">
-            <input id="input" type="number" name="answer"/>
+            <input id="input" type="number" name="answer" onkeydown="onHandleEnterInput(event)"/>
         </div>
         <button id="check" onclick="onHandleSubmitInput()">Check</button>
+        <div id="points"></div>
     </div>
     <div class="start">
         <button id="run" onclick="init()">New Game</button>

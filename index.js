@@ -117,11 +117,32 @@ class IO {
 	setScore(count) {
 		document.getElementById('score').innerText = count + ''
 	}
+	setPoints(count) {
+		document.getElementById('points').innerText = count + ''
+	}
+	reset() {
+		document.getElementById('game').classList.remove('hide');
+		document.getElementById('check').innerText = 'Check'
+		document.getElementById('example').innerText = ''
+		document.getElementById('input').value = ''
+		document.getElementById('input').focus()
+	}
 }
 let io = new IO()
 
 class Score {
-	current = 0
+	points = 2
+	getPoints() {
+		io.setPoints(this.points)
+		return this.points
+	}
+	setPoints(value) {
+		this.points = value
+		io.setPoints(value)
+	}
+	resetPoints() {
+		this.setPoints(2)
+	}
 	getAllGames() {
 		const lsAllGamesScore = localStorage.getItem('all-games-score')
 		const parseScores = lsAllGamesScore ? parseInt(lsAllGamesScore) : 0
@@ -133,38 +154,36 @@ class Score {
 		localStorage.setItem('all-games-score', updatedCount)
 		io.setAllGames(updatedCount)
 	}
-	get() {
+	getTotal() {
 		const score = localStorage.getItem('score')
 		const updated = score ? parseInt(score) : 0
 		io.setScore(updated)
 		return updated
 	}
-	set(value) {
+	setTotal(value) {
 		localStorage.setItem('score', value)
 		io.setScore(value)
 	}
 	up() {
-		this.set(this.get() + 1)
+		this.setTotal(this.getTotal() + this.points)
 	}
 	down() {
-		this.set(this.get() - 1)
+		this.setTotal(this.getTotal() - this.points)
 	}
 }
 let score = new Score();
+score.getAllGames()
+score.getTotal()
 
 let showText = false;
 let showNumbers = false;
 let hasClick = false
 
 function init() {
-	document.getElementById('game').classList.remove('hide');
-	document.getElementById('check').innerText = 'Check'
-	document.getElementById('example').innerText = ''
-	document.getElementById('input').value = ''
-	document.getElementById('input').focus()
+	io.reset()
 
-	score.getAllGames()
-	score.get()
+	score.resetPoints()
+	showText = false;
 	showNumbers = false
 	hasClick = false
 
@@ -187,8 +206,8 @@ function onHandleSubmitInput() {
 	io.setResult(checked)
 
 	// TODO После текста и считывания голоса сделать логику очков такую:
-	// Ввод Голосом(3), текстом(2) или числами(1)
-	// Вывод Голосом(3), текстом(2) или числами(1)
+	// Ввод Голосом(2), текстом(1) или числами(0.5)
+	// Вывод Голосом(2), текстом(1) или числами(0.5)
 	// Пример Прослушали Голосом, ввели Число получили 4 очка
 	// Пример Увидели Число, ввели Текстом получили 3 очка
 	// За проигрыш, какой то минус, потому что в итоге можно ввести цифру из цифры
@@ -201,16 +220,25 @@ function onHandleSubmitInput() {
 	}
 	score.upAllGames()
 	hasClick = true
-}
-
-function onHandleShowNumber() {
-	showNumbers = true;
-	const { a, b } = example;
-	io.setExample({ a, b })
+	document.getElementById('run').focus()
 }
 
 function onHandleShowText() {
 	showText = true;
+	score.setPoints(1)
 	const { a, b } = example;
 	io.setExampleText({ a, b })
+}
+
+function onHandleShowNumber() {
+	showNumbers = true;
+	score.setPoints(0.5)
+	const { a, b } = example;
+	io.setExample({ a, b })
+}
+
+function onHandleEnterInput(event) {
+	if (event.key === 'Enter') {
+		onHandleSubmitInput()
+	}
 }

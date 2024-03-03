@@ -9,7 +9,19 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+}
+.main #score-wrap {
+  display: flex;
   justify-content: space-around;
+  margin-bottom: 10px;
+  width: 320px;
+}
+.main #score-wrap #all-games:before {
+  content: 'all games ';
+}
+.main #score-wrap #score:before {
+  content: 'total score ';
 }
 .main #game {
   width: 320px;
@@ -18,17 +30,6 @@
 }
 .main #game.hide {
   display: none;
-}
-.main #game #score-wrap {
-  display: flex;
-  justify-content: space-around;
-  margin-bottom: 10px;
-}
-.main #game #score-wrap #all-games:before {
-  content: 'all games ';
-}
-.main #game #score-wrap #score:before {
-  content: 'score ';
 }
 .main #game #repeat-btn {
   font-size: 44px;
@@ -49,6 +50,15 @@
   padding: 10px;
   font-size: 32px;
   width: 100%;
+}
+.main #game #points {
+  font-size: 44px;
+  text-align: center;
+  height: 120px;
+  padding-top: 30px;
+}
+.main #game #points:before {
+  content: 'points ';
 }
 .main .start {
   width: 320px;

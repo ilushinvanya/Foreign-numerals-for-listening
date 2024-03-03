@@ -9,7 +9,17 @@
 	display flex
 	flex-direction column
 	align-items center
-	justify-content space-around
+	justify-content center
+	#score-wrap
+		display flex
+		justify-content space-around
+		margin-bottom 10px
+		width 320px
+		#all-games:before
+			content 'all games '
+
+		#score:before
+			content 'total score '
 
 	#game
 		width 320px
@@ -19,15 +29,6 @@
 		&.hide
 			display none
 
-		#score-wrap
-			display flex
-			justify-content space-around
-			margin-bottom 10px
-			#all-games:before
-				content 'all games '
-
-			#score:before
-				content 'score '
 
 		#repeat-btn
 			font-size 44px
@@ -48,6 +49,13 @@
 				padding 10px
 				font-size 32px
 				width 100%
+		#points
+			font-size 44px
+			text-align center
+			height 120px
+			padding-top: 30px;
+			&:before
+				content 'points '
 
 	.start
 		width 320px

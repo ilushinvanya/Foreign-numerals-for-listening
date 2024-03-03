@@ -6,8 +6,29 @@
     <meta name="keywords" content=""/>
     <meta name="description" content=""/>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>➕</text></svg>">
+    <link type="text/css" rel="stylesheet" href="./style.css">
 </head>
 <body>
+
+<div class="main">
+    <div id="game" class="hide">
+        <button id="repeat-btn" onclick="synth.repeat()">🧑🏼‍🦱🗣️🇬🇧</button>
+<!--        <button id="show-text" onclick="onHandleShowNumber()">Show text</button>-->
+        <button id="show-example" onclick="onHandleShowNumber()">Show numbers</button>
+        <div id="example"></div>
+        <div class="input-wrap">
+            <input id="input" type="number" name="answer"/>
+        </div>
+        <button id="check" onclick="onHandleSubmitInput()">Check</button>
+    </div>
+    <div class="start">
+        <button id="run" onclick="init()">New Game</button>
+        <div class="range">
+            <input id="min" type="number" name="min-range" value="8" placeholder="min"/>
+            <input id="max" type="number" name="max-range" value="19" placeholder="max"/>
+        </div>
+    </div>
+</div>
 <script src="./index.js"></script>
 </body>
 </html>

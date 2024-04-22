@@ -68,13 +68,9 @@ export const useArtyom = defineStore('artyom', () => {
     }
 
     const detectDevice = () => {
-        if(artyom.Device.isChrome) {
-            if (artyom.Device.isMobile) {
-                return 'isMobile';
-            }
-            return true;
-        }
-        return false;
+        if(!artyom.Device.isChrome) return false;
+        if (artyom.Device.isMobile) return 'isMobile';
+        return true;
     };
 
     return { artyom, init, say, availableLanguages, initVoices, detectDevice, isSupported }

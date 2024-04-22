@@ -14,7 +14,7 @@ export const useSettings = defineStore('settings', () => {
     })
 
     const outputLanguage = ref()
-    const inputLanguage = ref()
+    const inputLanguage = ref({ flag: '🇬🇧', description: 'English (Great Britain)', code: 'en-GB' },)
     const silentMode = ref(false)
 
     return { init, isValid, silentMode, outputLanguage, inputLanguage, min, max }

@@ -92,6 +92,6 @@ const getAllVoices = () => {
 	artyomStore.initVoices()
 }
 
-window.addEventListener('load', getAllVoices)
+window.onload = () => getAllVoices
 
 </script>

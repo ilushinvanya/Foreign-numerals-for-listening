@@ -1,7 +1,19 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import mkcert from 'vite-plugin-mkcert'
+import { quasar, transformAssetUrls } from '@quasar/vite-plugin'
+import pugPlugin from "vite-plugin-pug"
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [vue()],
+  server: { https: true },
+  plugins: [
+    vue({
+      template: { transformAssetUrls }
+    }),
+    mkcert(),
+    quasar({
+      sassVariables: 'src/quasar-variables.sass'
+    }),
+    pugPlugin(),
+  ],
 })

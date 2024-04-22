@@ -1,11 +1,20 @@
 <template>
-	<Game/>
-	<Start/>
+	<Game v-if="isStart"/>
+	<Settings v-if="isOpenSettings" @start="firstRun"/>
 </template>
 
 <script setup lang="ts">
 import Game from './components/game.vue'
-import Start from './components/start.vue'
+import Settings from './components/settings.vue'
+import { ref } from 'vue'
+
+const isOpenSettings = ref(true)
+const isStart = ref(false)
+
+const firstRun = () => {
+	isOpenSettings.value = false
+	isStart.value = true
+}
 </script>
 
 <style scoped>

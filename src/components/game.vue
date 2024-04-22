@@ -56,7 +56,7 @@ const $q = useQuasar()
 
 // question
 const settingsStore = useSettings()
-const { min, max, outputLanguage, inputLanguage } = storeToRefs(settingsStore)
+const { min, max, outputLanguage } = storeToRefs(settingsStore)
 
 const artyomStore = useArtyom()
 

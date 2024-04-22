@@ -1,3 +1,10 @@
-# Open
+# Tech
+- Quasar
+- TS
+- Vue 3
+- Vite
+- artyom.js
 
-https://ilushinvanya.github.io/addition-in-English/
+# Open demo
+
+https://ilushinvanya.github.io/Foreign-numerals-for-listening/

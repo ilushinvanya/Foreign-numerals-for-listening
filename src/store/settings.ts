@@ -13,8 +13,8 @@ export const useSettings = defineStore('settings', () => {
         return min.value < max.value;
     })
 
-    const outputLanguage = ref()
-    const inputLanguage = ref({ flag: '🇬🇧', description: 'English (Great Britain)', code: 'en-GB' },)
+    const outputLanguage = ref({ flag: '🇬🇧', description: 'English (Great Britain)', code: 'en-GB' })
+    const inputLanguage = ref()
     const silentMode = ref(false)
 
     return { init, isValid, silentMode, outputLanguage, inputLanguage, min, max }

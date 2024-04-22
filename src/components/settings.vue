@@ -92,6 +92,26 @@ const getAllVoices = () => {
 	artyomStore.initVoices()
 }
 
-window.onload = () => getAllVoices
+window.document.onload = () => {
+	getAllVoices()
+	const isSupported = artyomStore.isSupported()
+	const detectDevice = artyomStore.detectDevice()
+	if(!isSupported) {
+		$q.dialog({
+			title: 'Sorry',
+			message: 'Is not supported'
+		})
+		return
+	}
+	if(detectDevice === 'isMobile') {
+		$q.notify('Artyom can talk and obey commands in this browser, however the voice will be the default voice of the device. Cannot force language here.')
+	}
+	if(!detectDevice) {
+		$q.dialog({
+			title: 'Sorry',
+			message: 'Artyom only works with The Google Chrome Browser !'
+		})
+	}
+};
 
 </script>

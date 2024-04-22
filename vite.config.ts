@@ -16,4 +16,5 @@ export default defineConfig({
     }),
     pugPlugin(),
   ],
+  base: '/addition-in-English/'
 })

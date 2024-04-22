@@ -1,4 +1,4 @@
-import { ref, computed, onMounted } from 'vue';
+import { ref } from 'vue';
 import { defineStore } from 'pinia'
 // @ts-ignore
 import Artyom from 'artyom.js';
@@ -31,6 +31,7 @@ export const useArtyom = defineStore('artyom', () => {
 
     const availableLanguages = ref<LanguageList[]>([])
     const filterLanguages = (voices:SpeechSynthesisVoice[]) => {
+        if(!voices || !voices.length) return LANGUAGES
         return LANGUAGES.filter(language => {
             const found = voices.find(voice => {
                 return language.code === voice.lang;

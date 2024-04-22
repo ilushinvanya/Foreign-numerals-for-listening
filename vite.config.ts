@@ -16,5 +16,5 @@ export default defineConfig({
     }),
     pugPlugin(),
   ],
-  base: '/addition-in-English/'
+  base: '/Foreign-numerals-for-listening/'
 })

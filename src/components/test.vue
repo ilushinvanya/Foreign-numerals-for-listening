@@ -10,6 +10,7 @@
 						size="sm"
 						icon="settings"
 					)
+					// по клику включать или выключать микро
 					q-btn(
 						v-if="isListen"
 						round
@@ -114,7 +115,6 @@ const speech = (text: string) => {
 	artyomStore.say(text, {
 		lang: outputLanguage.value?.code,
 		onEnd:() => {
-			console.log("The text has been finished.");
 			artyomStore.artyom.obey()
 			// artyomStore.artyom.dontObey();
 		}

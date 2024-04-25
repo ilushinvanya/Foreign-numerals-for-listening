@@ -65,7 +65,7 @@ export const useArtyom = defineStore('artyom', () => {
     })
     const init = async (lang: string | undefined) => {
         await artyom.initialize({
-            // debug: true,
+            debug: false,
             lang: lang,
             listen: true,
             continuous: true,

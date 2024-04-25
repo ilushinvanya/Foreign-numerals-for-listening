@@ -61,7 +61,7 @@ const artyomStore = useArtyom()
 const { availableLanguages } = storeToRefs(artyomStore)
 
 const start = () => {
-	router.push('/game')
+	router.push('/test')
 }
 
 const getAllVoices = () => {

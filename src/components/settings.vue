@@ -6,17 +6,17 @@
 				q-btn(@click="getAllVoices" no-caps) Get languages
 			q-separator(inset)
 			q-card-section
-				LanguageSelect(
+				language-select(
 					v-model="outputLanguage"
 					:options="availableLanguages"
 					label="Output language"
 				)
-			//q-card-section
-			//	LanguageSelect(
-			//		v-model="inputLanguage"
-			//		:options="availableLanguages"
-			//		label="Input language"
-			//	)
+			q-card-section
+				language-select(
+					v-model="inputLanguage"
+					:options="availableLanguages"
+					label="Input language"
+				)
 			q-separator(inset)
 			q-card-section
 				.row
@@ -52,7 +52,7 @@ import LanguageSelect from './language-select.vue'
 const router = useRouter()
 const $q = useQuasar()
 
-$q.dark.set(false)
+$q.dark.set(true)
 
 const settingsStore = useSettings()
 const { min, max, outputLanguage, inputLanguage } = storeToRefs(settingsStore)

@@ -10,29 +10,30 @@
 						size="sm"
 						icon="settings"
 					)
-				#score-wrap
-					div all games: {{allGames}}
-					div score: {{score}}
+					q-btn(
+						v-if="isListen"
+						round
+						size="sm"
+					) 🎙
+				div
+					div All tests: {{allTests}}
+					div Score: {{score}}
 			q-separator(inset)
 			q-card-section.flex.justify-center
 				q-btn(
-					size="28px"
 					round
-					@click="speech"
+					size="28px"
+					@click="speechCurrent"
 				) 🔉{{ outputLanguage?.flag }}
-				//q-btn(
-				//	size="28px"
-				//	round
-				//	@click="speech"
-				//) 🎙
+
 			q-card-section.flex
 				q-input(
-					style="width: 100%"
 					v-model.number="answer"
 					type="number"
 					outlined
 					hint="Answer"
 					ref="answerInputEl"
+					style="width: 100%"
 					@keydown.enter="handleCheckButton"
 				)
 					template(v-slot:append)
@@ -43,12 +44,22 @@
 							color="green"
 							@click="handleCheckButton"
 						) Check
-			q-separator(inset)
+			q-separator(
+				v-if="sortedWrongAnswer.length"
+				inset
+			)
 			q-card-section(v-if="sortedWrongAnswer.length")
 				div
 					p Mistakes
-					q-chip(v-for="n in sortedWrongAnswer")
-						q-avatar(color="red" text-color="white") {{n[1]}}
+					q-chip(
+						v-for="n in sortedWrongAnswer"
+						clickable
+						@click="onClickWrongAnswer(n[0])"
+					)
+						q-avatar(
+							color="red"
+							text-color="white"
+						) {{n[1]}}
 						span {{ n[0] }}
 </template>
 
@@ -60,29 +71,62 @@ import { storeToRefs } from 'pinia';
 import { useQuasar } from 'quasar'
 
 const $q = useQuasar()
+$q.dark.set(true)
 
 // question
-const settingsStore = useSettings()
-const { min, max, outputLanguage } = storeToRefs(settingsStore)
-
 const artyomStore = useArtyom()
 
-artyomStore.init()
+const settingsStore = useSettings()
+const { min, max, outputLanguage, inputLanguage } = storeToRefs(settingsStore)
 
-// artyomStore.artyom.addCommands({
-// 	indexes: ["0","1", "2"],
-// 	action: (i:number) => {
-// 		console.log('i', i)
-// 	}
-// });
+const length = max.value - min.value + 1
+const answers = Array.from({ length: length }, (_, i) => `${i + min.value}`)
 
-const speech = () => {
-	artyomStore.say(`${digit.value}`, {
-		lang: outputLanguage.value.code,
+const numberOfIncorrectAnswers = ref(0)
+const initArtyom = async () => {
+	await artyomStore.init(inputLanguage.value?.code)
+	artyomStore.artyom.addCommands({
+		indexes: answers,
+		action: (i:number) => {
+			const answ = answers[i]
+			if(answ === digitText.value) {
+				answer.value = answ
+				setTimeout(handleCheckButton, 1000)
+			}
+			else {
+				numberOfIncorrectAnswers.value++
+				$q.notify({
+					type: 'negative',
+					message: `Incorrect ${answ}. Try again`
+				})
+				if(numberOfIncorrectAnswers.value === 3) {
+					answer.value = answ
+					handleCheckButton()
+					numberOfIncorrectAnswers.value = 0
+				}
+			}
+		}
+	})
+}
+initArtyom()
+
+const speech = (text: string) => {
+	artyomStore.say(text, {
+		lang: outputLanguage.value?.code,
+		onEnd:() => {
+			console.log("The text has been finished.");
+			artyomStore.artyom.obey()
+			// artyomStore.artyom.dontObey();
+		}
 	});
 }
+const speechCurrent = () => {
+	speech(digitText.value)
+}
 
-const digit = ref(0);
+const digit = ref(0)
+const digitText = computed(() => `${digit.value}`)
+
 const getRandomInt = (mn:number, mx:number): number => {
 	const min = Math.ceil(mn);
 	const max = Math.floor(mx);
@@ -94,10 +138,10 @@ const generate = () => {
 
 
 // answer
-const allGames = ref(0);
+const allTests = ref(0);
 const score = ref(0);
 
-const answer = ref();
+const answer = ref<string>();
 const answerInputEl = ref();
 
 const wrongAnswer = ref<Map<number, number>>(new Map());
@@ -106,7 +150,7 @@ const sortedWrongAnswer = computed(() => {
 })
 
 const check = (): true | number => {
-	const check = digit.value === parseInt(answer.value);
+	const check = digitText.value === answer.value;
 	if(check) return check;
 	return digit.value;
 }
@@ -114,30 +158,42 @@ const handleCheckButton = () => {
 	if(check() === true) {
 		$q.notify({
 			type: 'positive',
-			message: `Correctly️ ${digit.value}`
+			message: `Correctly ${digit.value}`
 		})
 		score.value++
 	}
 	else {
 		$q.notify({
 			type: 'negative',
-			message: `Wrong️ ${digit.value}`
+			message: `Wrong ${digit.value}`
 		})
 		score.value--
 		const currentWrong = wrongAnswer.value.get(digit.value)
 		if(currentWrong) wrongAnswer.value.set(digit.value, currentWrong + 1)
 		else wrongAnswer.value.set(digit.value, 1)
 	}
-	init()
-	allGames.value++
+	initTest()
+	allTests.value++
 }
 
-const init = () => {
-	answer.value = null
+const initTest = () => {
+	answer.value = ''
 	generate()
-	speech()
+	speech(digitText.value)
 	answerInputEl.value?.focus()
 }
-onMounted(init)
+onMounted(initTest)
+
+const onClickWrongAnswer = (number: number) => {
+	digit.value = number
+	answer.value = ''
+	speech(digitText.value)
+	answerInputEl.value?.focus()
+}
+
+const isListen = ref(false)
+setInterval(() => {
+	isListen.value = artyomStore.isRecognizing()
+}, 1000)
 
 </script>

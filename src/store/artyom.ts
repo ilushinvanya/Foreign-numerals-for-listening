@@ -1,4 +1,5 @@
 import { ref } from 'vue';
+import { Notify } from 'quasar'
 import { defineStore } from 'pinia'
 // @ts-ignore
 import Artyom from 'artyom.js';
@@ -16,7 +17,6 @@ export const LANGUAGES: ILanguage[] = [
     { flag: '🇩🇪', description: 'Deutsch', code: 'de-DE' },
     { flag: '🇮🇹', description: 'Italiano', code: 'it-IT' },
     { flag: '🇫🇷', description: 'Français', code: 'fr-FR' },
-    { flag: '🇯🇵', description: 'Japanese 日本人', code: 'ja-JP' },
     { flag: '🇷🇺', description: 'Russian', code: 'ru-RU' },
     { flag: '🇧🇷', description: 'Brazil', code: 'pt-PT' },
     { flag: '🇵🇱', description: 'Polski (Poland)', code: 'pl-PL' },
@@ -29,6 +29,51 @@ export const LANGUAGES: ILanguage[] = [
 
 export const useArtyom = defineStore('artyom', () => {
 
+    const artyom = new Artyom()
+    artyom.when('NOT_COMMAND_MATCHED', () => {
+        Notify.create({
+            message: 'Incorrect'
+        })
+    })
+    artyom.when('ERROR', (error: any) => {
+        // info-blocked
+        // info-denied
+        // no-speech
+        // aborted
+        // audio-capture
+        // network
+        // not-allowed
+        // service-not-allowed
+        // bad-grammar
+        // language-not-supported
+        // recognition_overlap
+        if(error.code === 'network') {
+            alert('An error ocurred, artyom cannot work without internet connection !');
+        }
+
+        if(error.code === 'audio-capture') {
+            alert('An error ocurred, artyom cannot work without a microphone');
+        }
+
+        if(error.code === 'not-allowed') {
+            alert('An error ocurred, it seems the access to your microphone is denied');
+        }
+        // Notify.create({
+        //     message: 'NOT_COMMAND_MATCHED'
+        // })
+        console.log('artyom when ERROR', error);
+    })
+    const init = async (lang: string | undefined) => {
+        await artyom.initialize({
+            // debug: true,
+            lang: lang,
+            listen: true,
+            continuous: true,
+            speed: 1,
+        })
+        artyom.say(' ')
+    }
+
     const availableLanguages = ref<ILanguage[]>([])
     const filterLanguages = (voices:SpeechSynthesisVoice[]) => {
         if(!voices || !voices.length) return LANGUAGES
@@ -40,22 +85,7 @@ export const useArtyom = defineStore('artyom', () => {
         });
         if(!filteredLanguages.length) return LANGUAGES
         return filteredLanguages
-    };
-
-    const artyom = new Artyom();
-
-    const init = () => {
-        artyom.initialize({
-            // debug: true,
-            // lang: lang,
-            // listen: true,
-            // continuous: true,
-            speed: 1,
-        }).then(() => {
-            artyom.say(' ')
-        });
     }
-
     const initVoices = () => {
         const voices = artyom.getVoices()
         availableLanguages.value = filterLanguages(voices)
@@ -75,7 +105,11 @@ export const useArtyom = defineStore('artyom', () => {
             return true;
         }
         return false;
-    };
+    }
+
+    const isRecognizing = () => {
+        return artyom.isRecognizing()
+    }
 
     return {
         artyom,
@@ -84,6 +118,7 @@ export const useArtyom = defineStore('artyom', () => {
         availableLanguages,
         initVoices,
         detectDevice,
-        isSupported
+        isSupported,
+        isRecognizing
     }
 })

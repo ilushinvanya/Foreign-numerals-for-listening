@@ -3,13 +3,13 @@ import { defineStore } from 'pinia'
 // @ts-ignore
 import Artyom from 'artyom.js';
 
-interface LanguageList {
+export interface ILanguage {
     flag: string;
     description: string;
     code: string;
 }
 
-const LANGUAGES: LanguageList[] = [
+export const LANGUAGES: ILanguage[] = [
     { flag: '🇺🇸', description: 'English (USA)', code: 'en-US' },
     { flag: '🇬🇧', description: 'English (Great Britain)', code: 'en-GB' },
     { flag: '🇪🇸', description: 'Español', code: 'es-ES' },
@@ -29,7 +29,7 @@ const LANGUAGES: LanguageList[] = [
 
 export const useArtyom = defineStore('artyom', () => {
 
-    const availableLanguages = ref<LanguageList[]>([])
+    const availableLanguages = ref<ILanguage[]>([])
     const filterLanguages = (voices:SpeechSynthesisVoice[]) => {
         if(!voices || !voices.length) return LANGUAGES
         const filteredLanguages = LANGUAGES.filter(language => {
@@ -77,5 +77,13 @@ export const useArtyom = defineStore('artyom', () => {
         return false;
     };
 
-    return { artyom, init, say, availableLanguages, initVoices, detectDevice, isSupported }
+    return {
+        artyom,
+        init,
+        say,
+        availableLanguages,
+        initVoices,
+        detectDevice,
+        isSupported
+    }
 })

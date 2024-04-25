@@ -2,7 +2,14 @@
 	.full-height.flex.justify-center.items-center
 		q-card.main-card(bordered)
 			q-card-section.flex.justify-between
-				.text-h6 Testing
+				.flex.items-center
+					.text-h6 Testing
+					q-btn.q-ml-sm(
+						to="/"
+						round
+						size="sm"
+						icon="settings"
+					)
 				#score-wrap
 					div all games: {{allGames}}
 					div score: {{score}}

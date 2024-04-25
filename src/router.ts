@@ -1,4 +1,4 @@
-import { createWebHistory, createRouter } from 'vue-router'
+import { createWebHashHistory, createRouter } from 'vue-router'
 
 import Test from './components/test.vue'
 import Settings from './components/settings.vue'
@@ -9,7 +9,7 @@ const routes = [
 ]
 
 export const router = createRouter({
-    history: createWebHistory('/Foreign-numerals-for-listening/'),
+    history: createWebHashHistory('/Foreign-numerals-for-listening/'),
     routes,
 })
 

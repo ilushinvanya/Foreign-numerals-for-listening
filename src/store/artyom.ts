@@ -32,12 +32,14 @@ export const useArtyom = defineStore('artyom', () => {
     const availableLanguages = ref<LanguageList[]>([])
     const filterLanguages = (voices:SpeechSynthesisVoice[]) => {
         if(!voices || !voices.length) return LANGUAGES
-        return LANGUAGES.filter(language => {
+        const filteredLanguages = LANGUAGES.filter(language => {
             const found = voices.find(voice => {
                 return language.code === voice.lang;
             });
             return !!found;
         });
+        if(!filteredLanguages.length) return LANGUAGES
+        return filteredLanguages
     };
 
     const artyom = new Artyom();

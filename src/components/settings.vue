@@ -52,8 +52,6 @@ import LanguageSelect from './language-select.vue'
 const router = useRouter()
 const $q = useQuasar()
 
-$q.dark.set(true)
-
 const settingsStore = useSettings()
 const { min, max, outputLanguage, inputLanguage } = storeToRefs(settingsStore)
 

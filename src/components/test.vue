@@ -73,7 +73,6 @@ import { storeToRefs } from 'pinia';
 import { useQuasar } from 'quasar'
 
 const $q = useQuasar()
-$q.dark.set(true)
 
 // question
 const artyomStore = useArtyom()

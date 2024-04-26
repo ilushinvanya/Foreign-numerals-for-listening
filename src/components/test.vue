@@ -169,7 +169,14 @@ const handleCheckButton = () => {
 	initTest()
 	allTests.value++
 }
+const onClickWrongAnswer = (number: number) => {
+	answer.value = null
+	digit.value = number
+	speech(digitText.value)
+	answerInputEl.value?.focus()
+}
 
+//
 const initTest = () => {
 	answer.value = null
 	generate()
@@ -184,18 +191,10 @@ onBeforeUnmount(() => {
 	artyomStore.artyom.fatality()
 })
 
-const onClickWrongAnswer = (number: number) => {
-	digit.value = number
-	answer.value = null
-	speech(digitText.value)
-	answerInputEl.value?.focus()
-}
-
 const isListen = ref(false)
 setInterval(() => {
 	isListen.value = artyomStore.isObeying()
 }, 800)
-
 const toggleObey = () => {
 	if(isListen.value) {
 		artyomStore.dontObey()

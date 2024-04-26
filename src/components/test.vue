@@ -10,12 +10,13 @@
 						size="sm"
 						icon="settings"
 					)
-					// по клику включать или выключать микро
 					q-btn(
-						v-if="isListen"
 						round
+						:color="isListen ? 'primary' : ''"
 						size="sm"
-					) 🎙
+						@click="toggleObey"
+					)
+						q-icon(:name="isListen ? 'mic' : 'mic_off'")
 				div
 					div All tests: {{allTests}}
 					div Score: {{score}}
@@ -65,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useSettings } from '../store/settings'
 import { useArtyom } from '../store/artyom'
 import { storeToRefs } from 'pinia';
@@ -80,8 +81,8 @@ const artyomStore = useArtyom()
 const settingsStore = useSettings()
 const { min, max, outputLanguage, inputLanguage } = storeToRefs(settingsStore)
 
-const length = max.value - min.value + 1
-const answers = Array.from({ length: length }, (_, i) => `${i + min.value}`)
+const length:number = max.value - min.value + 1
+const answers:string[] = Array.from({ length: length }, (_, i) => `${i + min.value}`)
 
 const numberOfIncorrectAnswers = ref(0)
 const initArtyom = async () => {
@@ -91,7 +92,7 @@ const initArtyom = async () => {
 		action: (i:number) => {
 			const answ = answers[i]
 			if(answ === digitText.value) {
-				answer.value = answ
+				answer.value = parseInt(answ)
 				setTimeout(handleCheckButton, 1000)
 			}
 			else {
@@ -101,7 +102,7 @@ const initArtyom = async () => {
 					message: `Incorrect ${answ}. Try again`
 				})
 				if(numberOfIncorrectAnswers.value === 3) {
-					answer.value = answ
+					answer.value = parseInt(answ)
 					handleCheckButton()
 					numberOfIncorrectAnswers.value = 0
 				}
@@ -114,10 +115,8 @@ initArtyom()
 const speech = (text: string) => {
 	artyomStore.say(text, {
 		lang: outputLanguage.value?.code,
-		onEnd:() => {
-			artyomStore.artyom.obey()
-			// artyomStore.artyom.dontObey();
-		}
+		onStart: artyomStore.dontObey,
+		onEnd: artyomStore.obey
 	});
 }
 const speechCurrent = () => {
@@ -141,7 +140,7 @@ const generate = () => {
 const allTests = ref(0);
 const score = ref(0);
 
-const answer = ref<string>();
+const answer = ref<number | null>();
 const answerInputEl = ref();
 
 const wrongAnswer = ref<Map<number, number>>(new Map());
@@ -150,7 +149,7 @@ const sortedWrongAnswer = computed(() => {
 })
 
 const check = (): true | number => {
-	const check = digitText.value === answer.value;
+	const check = digit.value === answer.value;
 	if(check) return check;
 	return digit.value;
 }
@@ -177,23 +176,37 @@ const handleCheckButton = () => {
 }
 
 const initTest = () => {
-	answer.value = ''
+	answer.value = null
 	generate()
 	speech(digitText.value)
 	answerInputEl.value?.focus()
 }
 onMounted(initTest)
+onBeforeUnmount(() => {
+	artyomStore.artyom.shutUp();
+	artyomStore.artyom.emptyCommands();
+	artyomStore.artyom.clearGarbageCollection();
+	artyomStore.artyom.fatality()
+})
 
 const onClickWrongAnswer = (number: number) => {
 	digit.value = number
-	answer.value = ''
+	answer.value = null
 	speech(digitText.value)
 	answerInputEl.value?.focus()
 }
 
 const isListen = ref(false)
 setInterval(() => {
-	isListen.value = artyomStore.isRecognizing()
-}, 1000)
+	isListen.value = artyomStore.isObeying()
+}, 800)
 
+const toggleObey = () => {
+	if(isListen.value) {
+		artyomStore.dontObey()
+	}
+	else {
+		artyomStore.obey()
+	}
+}
 </script>

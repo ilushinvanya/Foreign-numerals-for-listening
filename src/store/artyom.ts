@@ -107,8 +107,16 @@ export const useArtyom = defineStore('artyom', () => {
         return false;
     }
 
-    const isRecognizing = () => {
-        return artyom.isRecognizing()
+    const isObeying = () => {
+        return artyom.isObeying()
+    }
+
+    const obey = () => {
+        return artyom.obey()
+    }
+
+    const dontObey = () => {
+        return artyom.dontObey()
     }
 
     return {
@@ -119,6 +127,8 @@ export const useArtyom = defineStore('artyom', () => {
         initVoices,
         detectDevice,
         isSupported,
-        isRecognizing
+        isObeying,
+        obey,
+        dontObey
     }
 })

@@ -1,6 +1,7 @@
 import { ref } from 'vue';
 import { Notify } from 'quasar'
-import { defineStore } from 'pinia'
+import {defineStore, storeToRefs} from 'pinia'
+import { useSettings } from './settings'
 // @ts-ignore
 import Artyom from 'artyom.js';
 
@@ -28,6 +29,8 @@ export const LANGUAGES: ILanguage[] = [
 ];
 
 export const useArtyom = defineStore('artyom', () => {
+    const settings = useSettings()
+    const { outputLanguage, inputLanguage } = storeToRefs(settings)
 
     const artyom = new Artyom()
     artyom.when('NOT_COMMAND_MATCHED', () => {
@@ -63,15 +66,20 @@ export const useArtyom = defineStore('artyom', () => {
         // })
         console.log('artyom when ERROR', error);
     })
-    const init = async (lang: string | undefined) => {
+
+    const init = async () => {
         await artyom.initialize({
             debug: false,
-            lang: lang,
+            lang: inputLanguage.value?.code,
             listen: true,
             continuous: true,
             speed: 1,
         })
         artyom.say(' ')
+    }
+
+    const addCommands = (params: any) => {
+        artyom.addCommands(params)
     }
 
     const availableLanguages = ref<ILanguage[]>([])
@@ -91,8 +99,12 @@ export const useArtyom = defineStore('artyom', () => {
         availableLanguages.value = filterLanguages(voices)
     }
 
-    const say = (text:string, options:SayCallbacksObject) => {
-        artyom.say(text, options)
+    const say = (text:string) => {
+        artyom.say(text, {
+            lang: outputLanguage.value?.code,
+            onStart: dontObey,
+            onEnd: obey
+        })
     }
 
     const isSupported = () => {
@@ -122,6 +134,7 @@ export const useArtyom = defineStore('artyom', () => {
     return {
         artyom,
         init,
+        addCommands,
         say,
         availableLanguages,
         initVoices,

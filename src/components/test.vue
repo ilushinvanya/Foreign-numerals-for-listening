@@ -78,15 +78,15 @@ const $q = useQuasar()
 const artyomStore = useArtyom()
 
 const settingsStore = useSettings()
-const { min, max, outputLanguage, inputLanguage } = storeToRefs(settingsStore)
+const { min, max, outputLanguage } = storeToRefs(settingsStore)
 
 const length:number = max.value - min.value + 1
 const answers:string[] = Array.from({ length: length }, (_, i) => `${i + min.value}`)
 
 const numberOfIncorrectAnswers = ref(0)
 const initArtyom = async () => {
-	await artyomStore.init(inputLanguage.value?.code)
-	artyomStore.artyom.addCommands({
+	await artyomStore.init()
+	artyomStore.addCommands({
 		indexes: answers,
 		action: (i:number) => {
 			const answ = answers[i]
@@ -112,11 +112,7 @@ const initArtyom = async () => {
 initArtyom()
 
 const speech = (text: string) => {
-	artyomStore.say(text, {
-		lang: outputLanguage.value?.code,
-		onStart: artyomStore.dontObey,
-		onEnd: artyomStore.obey
-	});
+	artyomStore.say(text)
 }
 const speechCurrent = () => {
 	speech(digitText.value)

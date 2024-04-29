@@ -1,5 +1,5 @@
 <template lang="pug">
-	.full-height.flex.justify-center.items-center
+.full-height.flex.justify-center.items-center
 		q-card.main-card(bordered)
 			q-card-section.flex.justify-between
 				.flex.items-center
@@ -10,13 +10,7 @@
 						size="sm"
 						icon="settings"
 					)
-					q-btn(
-						round
-						:color="isListen ? 'primary' : ''"
-						size="sm"
-						@click="toggleObey"
-					)
-						q-icon(:name="isListen ? 'mic' : 'mic_off'")
+
 				div
 					div All tests: {{allTests}}
 					div Score: {{score}}
@@ -24,10 +18,17 @@
 			q-card-section.flex.justify-center
 				q-btn(
 					round
+					:color="isSpeaking ? 'primary' : ''"
 					size="28px"
 					@click="speechCurrent"
 				) 🔉{{ outputLanguage?.flag }}
-
+				q-btn.q-ml-md(
+					round
+					:color="isListening ? 'primary' : ''"
+					size="28px"
+					@click="toggleMic"
+				)
+					q-icon(:name="isListening ? 'mic' : 'mic_off'")
 			q-card-section.flex
 				q-input(
 					v-model.number="answer"
@@ -66,53 +67,54 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useSettings } from '../store/settings'
-import { useArtyom } from '../store/artyom'
+import { useSpeechRecognitionStore } from '../store/useSpeechRecognitionStore'
+import { useSpeechSynthesisStore } from '../store/useSpeechSynthesisStore'
 import { storeToRefs } from 'pinia';
 import { useQuasar } from 'quasar'
 
 const $q = useQuasar()
 
 // question
-const artyomStore = useArtyom()
+const speechRecognitionStore = useSpeechRecognitionStore()
+const { transcript, error, isListening } = storeToRefs(speechRecognitionStore)
+
+const speechSynthesisStore = useSpeechSynthesisStore()
+const { isSpeaking, synthError } = storeToRefs(speechSynthesisStore)
+
+watch(isSpeaking, (newValue, oldValue) => {
+	if(oldValue && !newValue) {
+		speechRecognitionStore.start()
+	}
+})
+
+const numberOfIncorrectAnswers = ref(0)
+watch(isListening, (newValue, oldValue) => {
+	if(oldValue && !newValue) {
+		if (transcript.value === digitText.value) {
+			answer.value = parseInt(transcript.value)
+			setTimeout(handleCheckButton, 1000)
+		} else {
+			numberOfIncorrectAnswers.value++
+			$q.notify({
+				type: 'negative',
+				message: `Incorrect ${transcript.value}. Try again`
+			})
+			if (numberOfIncorrectAnswers.value === 3) {
+				answer.value = parseInt(transcript.value)
+				handleCheckButton()
+				numberOfIncorrectAnswers.value = 0
+			}
+		}
+	}
+})
 
 const settingsStore = useSettings()
 const { min, max, outputLanguage } = storeToRefs(settingsStore)
 
-const length:number = max.value - min.value + 1
-const answers:string[] = Array.from({ length: length }, (_, i) => `${i + min.value}`)
-
-const numberOfIncorrectAnswers = ref(0)
-const initArtyom = async () => {
-	await artyomStore.init()
-	artyomStore.addCommands({
-		indexes: answers,
-		action: (i:number) => {
-			const answ = answers[i]
-			if(answ === digitText.value) {
-				answer.value = parseInt(answ)
-				setTimeout(handleCheckButton, 1000)
-			}
-			else {
-				numberOfIncorrectAnswers.value++
-				$q.notify({
-					type: 'negative',
-					message: `Incorrect ${answ}. Try again`
-				})
-				if(numberOfIncorrectAnswers.value === 3) {
-					answer.value = parseInt(answ)
-					handleCheckButton()
-					numberOfIncorrectAnswers.value = 0
-				}
-			}
-		}
-	})
-}
-initArtyom()
-
 const speech = (text: string) => {
-	artyomStore.say(text)
+	speechSynthesisStore.speak(text)
 }
 const speechCurrent = () => {
 	speech(digitText.value)
@@ -184,23 +186,13 @@ const initTest = () => {
 	answerInputEl.value?.focus()
 }
 onMounted(initTest)
-onBeforeUnmount(() => {
-	artyomStore.artyom.shutUp();
-	artyomStore.artyom.emptyCommands();
-	artyomStore.artyom.clearGarbageCollection();
-	artyomStore.artyom.fatality()
-})
 
-const isListen = ref(false)
-setInterval(() => {
-	isListen.value = artyomStore.isObeying()
-}, 800)
-const toggleObey = () => {
-	if(isListen.value) {
-		artyomStore.dontObey()
+const toggleMic = () => {
+	if(isListening.value) {
+		// speechRecognitionStore.stop()
 	}
 	else {
-		artyomStore.obey()
+		speechRecognitionStore.start()
 	}
 }
 </script>

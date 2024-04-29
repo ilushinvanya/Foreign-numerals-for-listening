@@ -1,49 +1,49 @@
 <template lang="pug">
-	.full-height.flex.justify-center.items-center
-		q-card.main-card(bordered)
-			q-card-section.flex.justify-between
-				div(class="text-h6") Settings
-				q-btn(@click="getAllVoices" no-caps) Get languages
-			q-separator(inset)
-			q-card-section
-				language-select(
-					v-model="outputLanguage"
-					:options="availableLanguages"
-					label="Output language"
-				)
-			q-card-section
-				language-select(
-					v-model="inputLanguage"
-					:options="availableLanguages"
-					label="Input language"
-				)
-			q-separator(inset)
-			q-card-section
-				.row
-					.col.q-pr-md
-						q-input(
-							v-model.number="min"
-							type="number"
-							filled
-							dense
-							label="Minimum"
-						)
-					.col
-						q-input(
-							v-model.number="max"
-							type="number"
-							filled
-							dense
-							label="Maximum"
-						)
-			q-separator(inset)
-			q-card-section
-				q-btn(@click="start") Save and Run
+.full-height.flex.justify-center.items-center
+	q-card.main-card(bordered)
+		q-card-section.flex.justify-between
+			div(class="text-h6") Settings
+			q-btn(@click="getAllVoices" no-caps) Get languages
+		q-separator(inset)
+		q-card-section
+			LanguageSelect(
+				v-model="outputLanguage"
+				:options="availableLanguages"
+				label="Output language"
+			)
+		q-card-section
+			LanguageSelect(
+				v-model="inputLanguage"
+				:options="availableLanguages"
+				label="Input language"
+			)
+		q-separator(inset)
+		q-card-section
+			.row
+				.col.q-pr-md
+					q-input(
+						v-model.number="min"
+						type="number"
+						filled
+						dense
+						label="Minimum"
+					)
+				.col
+					q-input(
+						v-model.number="max"
+						type="number"
+						filled
+						dense
+						label="Maximum"
+					)
+		q-separator(inset)
+		q-card-section
+			q-btn(@click="start") Save and Run
 </template>
 
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
-import { useSettings } from '../store/settings'
+import { useSettings, LANGUAGES } from '../store/settings'
 import { useArtyom } from '../store/artyom'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'

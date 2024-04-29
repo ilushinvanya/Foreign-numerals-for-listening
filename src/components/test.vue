@@ -10,7 +10,6 @@
 						size="sm"
 						icon="settings"
 					)
-
 				div
 					div All tests: {{allTests}}
 					div Score: {{score}}
@@ -18,17 +17,20 @@
 			q-card-section.flex.justify-center
 				q-btn(
 					round
-					:color="isSpeaking ? 'primary' : ''"
+					:outline="isSpeaking"
+					:text-color="isSpeaking ? 'primary' : ''"
 					size="28px"
 					@click="speechCurrent"
 				) 🔉{{ outputLanguage?.flag }}
 				q-btn.q-ml-md(
 					round
-					:color="isListening ? 'primary' : ''"
+					:outline="isListening"
+					:text-color="isListening ? 'primary' : ''"
+					:icon="isListening ? 'mic' : 'mic_off'"
 					size="28px"
 					@click="toggleMic"
 				)
-					q-icon(:name="isListening ? 'mic' : 'mic_off'")
+					//color="black"
 			q-card-section.flex
 				q-input(
 					v-model.number="answer"

@@ -3,6 +3,7 @@ q-select(
 		v-model="model"
 		:disable="!options.length"
 		filled
+		dense
 		:options="options"
 		option-label="flag"
 		option-value="string"
@@ -22,7 +23,7 @@ q-select(
 </template>
 
 <script setup lang="ts">
-import type { ILanguage } from '../store/settings';
+import type { ILanguage } from '../store/useSettings';
 import { mdiMenuDown } from '@mdi/js';
 
 interface IProps {

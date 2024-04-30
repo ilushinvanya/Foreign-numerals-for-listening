@@ -3,7 +3,7 @@
 		q-card.main-card(bordered)
 			q-card-section.flex.justify-between
 				div
-					.text-h6 Testing
+					.text-h6 {{ outputLanguage?.flag }} Testing
 					.text-subtitle2 ⏱️️ {{ time / 10 }}
 				.flex.items-center
 					q-btn.q-mr-md(
@@ -20,10 +20,12 @@
 					round
 					:outline="isSpeaking"
 					:text-color="isSpeaking ? 'primary' : ''"
+					:icon="isSpeaking ? mdiVolumeHigh : mdiVolumeOff"
 					size="28px"
 					@click="speechCurrent"
-				) 🔉{{ outputLanguage?.flag }}
+				)
 				q-btn.q-ml-md(
+					v-if="voiceInput"
 					round
 					:outline="isListening"
 					:text-color="isListening ? 'primary' : ''"
@@ -70,12 +72,21 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
-import { useSettings } from '../store/settings'
-import { useSpeechRecognitionStore } from '../store/useSpeechRecognitionStore'
-import { useSpeechSynthesisStore } from '../store/useSpeechSynthesisStore'
+import { useSettings } from '../store/useSettings'
+import { useSpeechRecognition } from '../store/useSpeechRecognition'
+import { useSpeechSynthesis } from '../store/useSpeechSynthesis'
 import { storeToRefs } from 'pinia';
 import { useQuasar } from 'quasar'
-import { mdiCheck, mdiMicrophone, mdiMicrophoneOff, mdiCogs, mdiAlertOutline, mdiAlertDecagramOutline } from '@mdi/js'
+import {
+	mdiCheck,
+	mdiMicrophone,
+	mdiMicrophoneOff,
+	mdiCogs,
+	mdiAlertOutline,
+	mdiAlertDecagramOutline,
+	mdiVolumeHigh,
+	mdiVolumeOff
+} from '@mdi/js'
 
 const $q = useQuasar()
 
@@ -84,7 +95,7 @@ const digit = ref(0)
 const digitText = computed(() => `${digit.value}`)
 
 const settingsStore = useSettings()
-const { min, max, outputLanguage } = storeToRefs(settingsStore)
+const { min, max, outputLanguage, voiceInput } = storeToRefs(settingsStore)
 
 const getRandomInt = (mn:number, mx:number): number => {
 	const min = Math.ceil(mn);
@@ -182,13 +193,14 @@ onBeforeUnmount(() => {
 })
 
 // Recognition & Synthesis
-const speechRecognitionStore = useSpeechRecognitionStore()
+const speechRecognitionStore = useSpeechRecognition()
 const { transcript, recognitionError, isListening } = storeToRefs(speechRecognitionStore)
 
-const speechSynthesisStore = useSpeechSynthesisStore()
+const speechSynthesisStore = useSpeechSynthesis()
 const { isSpeaking, synthesisError } = storeToRefs(speechSynthesisStore)
 
 watch(recognitionError, (newValue) => {
+	if(!voiceInput.value) return
 	if(newValue) {
 		$q.notify({
 			icon: mdiAlertDecagramOutline,
@@ -208,6 +220,7 @@ watch(synthesisError, (newValue) => {
 })
 
 watch(isSpeaking, (newValue, oldValue) => {
+	if(!voiceInput.value) return
 	if(oldValue && !newValue) {
 		speechRecognitionStore.start()
 	}

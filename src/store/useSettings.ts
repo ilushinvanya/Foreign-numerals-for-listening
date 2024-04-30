@@ -29,10 +29,6 @@ export const useSettings = defineStore('settings', () => {
     const min = ref(11)
     const max = ref(99)
 
-    const init = (mn: number, mx: number) => {
-        min.value = mn
-        max.value = mx
-    }
     const isValid = computed(() => {
         return min.value < max.value;
     })
@@ -44,7 +40,7 @@ export const useSettings = defineStore('settings', () => {
     const outputLanguage = ref(getDefaultLanguage('en-GB'))
     const inputLanguage = ref(getDefaultLanguage('ru-RU'))
 
-    const silentMode = ref(false)
+    const voiceInput = ref(true)
 
     const Device = {
         isMobile: navigator.userAgent.match(/Android/i) || navigator.userAgent.match(/webOS/i) || navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPad/i) || navigator.userAgent.match(/iPod/i) || navigator.userAgent.match(/BlackBerry/i) || navigator.userAgent.match(/Windows Phone/i),
@@ -52,5 +48,5 @@ export const useSettings = defineStore('settings', () => {
     };
 
 
-    return { init, isValid, silentMode, outputLanguage, inputLanguage, min, max, Device }
+    return { isValid, voiceInput, outputLanguage, inputLanguage, min, max, Device }
 })

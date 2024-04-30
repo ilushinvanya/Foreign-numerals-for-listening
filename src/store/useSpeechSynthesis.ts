@@ -1,10 +1,10 @@
 import { defineStore, storeToRefs } from 'pinia';
 import { ref } from 'vue';
-import { useSettings } from "./settings";
+import { useSettings } from "./useSettings";
 
-export const useSpeechSynthesisStore = defineStore('speechSynthesis', () => {
-	const settings = useSettings()
-	const { outputLanguage } = storeToRefs(settings)
+export const useSpeechSynthesis = defineStore('speechSynthesis', () => {
+	const settingsStore = useSettings()
+	const { outputLanguage } = storeToRefs(settingsStore)
 
 	const isSpeaking = ref(false)
 	const error = ref<string | null>(null)

@@ -1,10 +1,10 @@
-import {defineStore, storeToRefs} from 'pinia';
+import { defineStore, storeToRefs } from 'pinia';
 import { ref } from 'vue';
-import { useSettings } from "./settings";
+import { useSettings } from "./useSettings";
 
-export const useSpeechRecognitionStore = defineStore('speechRecognition', () => {
-	const settings = useSettings()
-	const { inputLanguage } = storeToRefs(settings)
+export const useSpeechRecognition = defineStore('speechRecognition', () => {
+	const settingsStore = useSettings()
+	const { inputLanguage } = storeToRefs(settingsStore)
 
 	const transcript = ref('')
 	const error = ref<string | null>(null)

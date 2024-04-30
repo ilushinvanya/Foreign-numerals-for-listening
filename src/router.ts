@@ -9,7 +9,7 @@ const routes = [
 ]
 
 export const router = createRouter({
-    history: createWebHashHistory('/Foreign-numerals-for-listening/'),
+    history: createWebHashHistory('/' + import.meta.env.VITE_APP_PATH + '/'),
     routes,
 })
 

@@ -12,7 +12,7 @@ export default defineConfig({
     }),
     mkcert(),
     quasar({
-      sassVariables: 'src/quasar-variables.sass'
+      sassVariables: 'src/styles/quasar-variables.sass'
     }),
     pugPlugin(),
   ],

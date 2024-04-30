@@ -8,6 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mdi/js": "^7.4.47",
     "@quasar/extras": "^1.16.11",
     "pinia": "^2.1.7",
     "quasar": "^2.15.3",

@@ -8,8 +8,8 @@
 				.flex.items-center
 					q-btn.q-mr-md(
 						to="/"
+						:icon="mdiCogs"
 						round
-						icon="settings"
 					)
 					div
 						div All tests: {{allTests}}
@@ -27,7 +27,7 @@
 					round
 					:outline="isListening"
 					:text-color="isListening ? 'primary' : ''"
-					:icon="isListening ? 'mic' : 'mic_off'"
+					:icon="isListening ? mdiMicrophone : mdiMicrophoneOff"
 					size="28px"
 					@click="toggleMic"
 				)
@@ -45,9 +45,9 @@
 						q-btn(
 							no-caps
 							outline
-							icon="check"
 							color="green"
 							@click="handleCheckButton"
+							:icon="mdiCheck"
 						) Check
 			q-separator(
 				v-if="sortedWrongAnswer.length"
@@ -75,6 +75,7 @@ import { useSpeechRecognitionStore } from '../store/useSpeechRecognitionStore'
 import { useSpeechSynthesisStore } from '../store/useSpeechSynthesisStore'
 import { storeToRefs } from 'pinia';
 import { useQuasar } from 'quasar'
+import { mdiCheck, mdiMicrophone, mdiMicrophoneOff, mdiCogs, mdiAlertOutline, mdiAlertDecagramOutline } from '@mdi/js'
 
 const $q = useQuasar()
 
@@ -111,6 +112,7 @@ const numberOfIncorrectAnswers = ref(0)
 const handleCheckButton = () => {
 	if(check() === true) {
 		$q.notify({
+			icon: mdiCheck,
 			type: 'positive',
 			message: `Correctly «${digit.value}»`
 		})
@@ -125,6 +127,7 @@ const handleCheckButton = () => {
 		if (numberOfIncorrectAnswers.value < 3) {
 			// неправильно, но можно повторить
 			$q.notify({
+				icon: mdiAlertOutline,
 				type: 'warning',
 				message: `Incorrect «${answer.value}». Try again`
 			})
@@ -133,6 +136,7 @@ const handleCheckButton = () => {
 		else {
 			// непрвильно, ошибка
 			$q.notify({
+				icon: mdiAlertDecagramOutline,
 				type: 'negative',
 				message: `Wrong «${answer.value}». Correct answer is «${digit.value}»`
 			})
@@ -187,6 +191,7 @@ const { isSpeaking, synthesisError } = storeToRefs(speechSynthesisStore)
 watch(recognitionError, (newValue) => {
 	if(newValue) {
 		$q.notify({
+			icon: mdiAlertDecagramOutline,
 			type: 'negative',
 			message: `${newValue}`
 		})
@@ -195,6 +200,7 @@ watch(recognitionError, (newValue) => {
 watch(synthesisError, (newValue) => {
 	if(newValue) {
 		$q.notify({
+			icon: mdiAlertDecagramOutline,
 			type: 'negative',
 			message: `${newValue}`
 		})
@@ -220,6 +226,7 @@ watch(isListening, (newValue, oldValue) => {
 		clearInterval(timer)
 		if(!transcript.value) {
 			$q.notify({
+				icon: mdiAlertOutline,
 				type: 'warning',
 				message: `Didn't hear. Try again`
 			})
@@ -229,6 +236,7 @@ watch(isListening, (newValue, oldValue) => {
 		const parsedTranscript = parseInt(transcript.value)
 		if(isNaN(parsedTranscript)) {
 			$q.notify({
+				icon: mdiAlertOutline,
 				type: 'warning',
 				message: `Incorrect «${transcript.value}». Try again`
 			})

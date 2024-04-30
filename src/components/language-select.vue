@@ -1,5 +1,5 @@
 <template lang="pug">
-	q-select(
+q-select(
 		v-model="model"
 		:disable="!options.length"
 		filled
@@ -7,6 +7,7 @@
 		option-label="flag"
 		option-value="string"
 		:label="label"
+		:dropdown-icon="mdiMenuDown"
 	)
 		template(v-slot:selected-item="scope")
 			.flex.align-center.items-center
@@ -21,7 +22,8 @@
 </template>
 
 <script setup lang="ts">
-import type { ILanguage } from '../store/artyom';
+import type { ILanguage } from '../store/settings';
+import { mdiMenuDown } from '@mdi/js';
 
 interface IProps {
 	options: ILanguage[];

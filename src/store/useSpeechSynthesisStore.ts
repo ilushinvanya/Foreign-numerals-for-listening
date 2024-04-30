@@ -1,4 +1,4 @@
-import {defineStore, storeToRefs} from 'pinia';
+import { defineStore, storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import { useSettings } from "./settings";
 
@@ -29,9 +29,18 @@ export const useSpeechSynthesisStore = defineStore('speechSynthesis', () => {
 		speechSynthesis.speak(utterance);
 	}
 
+	const shutUp = () => {
+		if ('speechSynthesis' in window) {
+			do {
+				window.speechSynthesis.cancel();
+			} while (window.speechSynthesis.pending);
+		}
+	}
+
 	return {
 		isSpeaking,
 		synthesisError: error,
-		speak
+		speak,
+		shutUp
 	}
 });

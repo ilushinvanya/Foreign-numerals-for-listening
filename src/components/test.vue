@@ -69,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
 import { useSettings } from '../store/settings'
 import { useSpeechRecognitionStore } from '../store/useSpeechRecognitionStore'
 import { useSpeechSynthesisStore } from '../store/useSpeechSynthesisStore'
@@ -172,7 +172,10 @@ const runTest = () => {
 	answerInputEl.value?.focus()
 }
 onMounted(runTest)
-
+onBeforeUnmount(() => {
+	speechRecognitionStore.stop()
+	speechSynthesisStore.shutUp()
+})
 
 // Recognition & Synthesis
 const speechRecognitionStore = useSpeechRecognitionStore()

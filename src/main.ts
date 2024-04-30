@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import './style.css'
+// import './style.css'
 import { Quasar, Notify, Dialog } from 'quasar'
 import { router } from './router'
 
@@ -13,6 +13,7 @@ import '@quasar/extras/material-icons/material-icons.css'
 
 // Import Quasar css
 import 'quasar/src/css/index.sass'
+import './style.sass'
 
 // Assumes your root component is App.vue
 // and placed in same folder as main.js

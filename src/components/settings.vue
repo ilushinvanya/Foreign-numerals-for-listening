@@ -43,13 +43,12 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { useSettings, LANGUAGES } from '../store/settings'
-// import { useArtyom } from '../store/artyom'
-// import { useQuasar } from 'quasar'
+import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 import LanguageSelect from './language-select.vue'
 
 const router = useRouter()
-// const $q = useQuasar()
+const $q = useQuasar()
 
 const settingsStore = useSettings()
 const { min, max, outputLanguage, inputLanguage } = storeToRefs(settingsStore)
@@ -59,24 +58,12 @@ const start = () => {
 }
 
 window.document.onload = () => {
-	// const isSupported = artyomStore.isSupported()
-	// const detectDevice = artyomStore.detectDevice()
-	// if(!isSupported) {
-	// 	$q.dialog({
-	// 		title: 'Sorry',
-	// 		message: 'Is not supported'
-	// 	})
-	// 	return
-	// }
-	// if(detectDevice === 'isMobile') {
-	// 	// Artyom can talk and obey commands in this browser, however the voice will be the default voice of the device. Cannot force language here
-	// }
-	// if(!detectDevice) {
-	// 	$q.dialog({
-	// 		title: 'Sorry',
-	// 		message: 'App only works with The Google Chrome Browser !'
-	// 	})
-	// }
+	if (!settingsStore.Device.isChrome) {
+		$q.dialog({
+			title: 'Sorry',
+			message: 'The Speech Recognition and Speech Synthesis APIs require the Google Chrome Browser to work.'
+		})
+	}
 };
 
 </script>

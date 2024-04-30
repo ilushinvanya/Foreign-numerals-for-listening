@@ -226,12 +226,12 @@ watch(isSpeaking, (newValue, oldValue) => {
 	}
 })
 
-let timer = 0
+let timer: number = 0
 let time = ref(0)
 watch(isListening, (newValue, oldValue) => {
 	if(!oldValue && newValue) {
 		time.value = 0
-		timer = setInterval(() => {
+		timer = window.setInterval(() => {
 			time.value++
 		}, 100)
 	}

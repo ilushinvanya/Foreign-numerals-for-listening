@@ -3,7 +3,6 @@
 	q-card.main-card(bordered)
 		q-card-section.flex.justify-between
 			div(class="text-h6") Settings
-			//q-btn(@click="getAllVoices" no-caps) Get languages
 		q-separator(inset)
 		q-card-section
 			LanguageSelect(

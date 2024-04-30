@@ -9,24 +9,21 @@ export const useSpeechSynthesisStore = defineStore('speechSynthesis', () => {
 	const isSpeaking = ref(false)
 	const error = ref<string | null>(null)
 
-	const speak = (text: string) => {
-		if (!('speechSynthesis' in window)) {
-			isSpeaking.value = false;
-			error.value = 'Speech Synthesis is not supported in this browser.';
-			return;
-		}
+	if (!('speechSynthesis' in window)) {
+		isSpeaking.value = false;
+		error.value = 'Speech Synthesis is not supported in this browser.';
+	}
 
+	const speak = (text: string) => {
 		const utterance = new SpeechSynthesisUtterance(text);
 		utterance.lang = outputLanguage.value?.code || 'en-US';
 
 		utterance.onstart = () => {
 			isSpeaking.value = true;
-			console.log('Speech synthesis service has started');
 		};
 
 		utterance.onend = () => {
 			isSpeaking.value = false;
-			console.log('Speech synthesis service has ended');
 		};
 
 		speechSynthesis.speak(utterance);
@@ -34,7 +31,7 @@ export const useSpeechSynthesisStore = defineStore('speechSynthesis', () => {
 
 	return {
 		isSpeaking,
-		synthError: error,
+		synthesisError: error,
 		speak
 	}
 });

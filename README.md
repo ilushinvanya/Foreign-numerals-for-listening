@@ -3,7 +3,8 @@
 - TS
 - Vue 3
 - Vite
-- artyom.js
+- Speech Recognition
+- Speech Synthesis
 
 # Open demo
 

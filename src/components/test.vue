@@ -2,17 +2,18 @@
 .full-height.flex.justify-center.items-center
 		q-card.main-card(bordered)
 			q-card-section.flex.justify-between
-				.flex.items-center
+				div
 					.text-h6 Testing
-					q-btn.q-ml-sm(
+					.text-subtitle2 ⏱️️ {{ time / 10 }}
+				.flex.items-center
+					q-btn.q-mr-md(
 						to="/"
 						round
-						size="sm"
 						icon="settings"
 					)
-				div
-					div All tests: {{allTests}}
-					div Score: {{score}}
+					div
+						div All tests: {{allTests}}
+						div Score: {{score}}
 			q-separator(inset)
 			q-card-section.flex.justify-center
 				q-btn(
@@ -78,50 +79,11 @@ import { useQuasar } from 'quasar'
 const $q = useQuasar()
 
 // question
-const speechRecognitionStore = useSpeechRecognitionStore()
-const { transcript, recognitionError, isListening } = storeToRefs(speechRecognitionStore)
-
-const speechSynthesisStore = useSpeechSynthesisStore()
-const { isSpeaking, synthesisError } = storeToRefs(speechSynthesisStore)
-
-watch(isSpeaking, (newValue, oldValue) => {
-	if(oldValue && !newValue) {
-		speechRecognitionStore.start()
-	}
-})
-
-const numberOfIncorrectAnswers = ref(0)
-
-watch(isListening, (newValue, oldValue) => {
-	if(oldValue && !newValue) {
-		if(!transcript.value) return;
-
-		const parsedTranscript = parseInt(transcript.value)
-		if(isNaN(parsedTranscript)) {
-			$q.notify({
-				type: 'negative',
-				message: `Incorrect «${transcript.value}». Try again`
-			})
-		} else {
-			answer.value = parsedTranscript
-			setTimeout(handleCheckButton, 1000)
-		}
-	}
-})
+const digit = ref(0)
+const digitText = computed(() => `${digit.value}`)
 
 const settingsStore = useSettings()
 const { min, max, outputLanguage } = storeToRefs(settingsStore)
-
-const speech = (text: string) => {
-	speechRecognitionStore.stop()
-	speechSynthesisStore.speak(text)
-}
-const speechCurrent = () => {
-	speech(digitText.value)
-}
-
-const digit = ref(0)
-const digitText = computed(() => `${digit.value}`)
 
 const getRandomInt = (mn:number, mx:number): number => {
 	const min = Math.ceil(mn);
@@ -140,21 +102,12 @@ const score = ref(0);
 const answer = ref<number | null>();
 const answerInputEl = ref();
 
-const wrongAnswer = ref<Map<number, number>>(new Map());
-const sortedWrongAnswer = computed(() => {
-	return [...wrongAnswer.value.entries()].sort((a, b) => b[1] - a[1])
-})
-const setWrongAnswer = () => {
-	const currentWrong = wrongAnswer.value.get(digit.value)
-	if(currentWrong) wrongAnswer.value.set(digit.value, currentWrong + 1)
-	else wrongAnswer.value.set(digit.value, 1)
-}
-
 const check = (): true | number => {
 	const check = digit.value === answer.value;
 	if(check) return check;
 	return digit.value;
 }
+const numberOfIncorrectAnswers = ref(0)
 const handleCheckButton = () => {
 	if(check() === true) {
 		$q.notify({
@@ -188,10 +141,21 @@ const handleCheckButton = () => {
 			score.value--
 			allTests.value++
 			setWrongAnswer()
-			runTest()
+			setTimeout(runTest, 2000)
 		}
 	}
+}
 
+
+// Wrong answers
+const wrongAnswer = ref<Map<number, number>>(new Map());
+const sortedWrongAnswer = computed(() => {
+	return [...wrongAnswer.value.entries()].sort((a, b) => b[1] - a[1])
+})
+const setWrongAnswer = () => {
+	const currentWrong = wrongAnswer.value.get(digit.value)
+	if(currentWrong) wrongAnswer.value.set(digit.value, currentWrong + 1)
+	else wrongAnswer.value.set(digit.value, 1)
 }
 const onClickWrongAnswer = (number: number) => {
 	answer.value = null
@@ -200,7 +164,7 @@ const onClickWrongAnswer = (number: number) => {
 	answerInputEl.value?.focus()
 }
 
-//
+// Init
 const runTest = () => {
 	answer.value = null
 	generate()
@@ -208,6 +172,77 @@ const runTest = () => {
 	answerInputEl.value?.focus()
 }
 onMounted(runTest)
+
+
+// Recognition & Synthesis
+const speechRecognitionStore = useSpeechRecognitionStore()
+const { transcript, recognitionError, isListening } = storeToRefs(speechRecognitionStore)
+
+const speechSynthesisStore = useSpeechSynthesisStore()
+const { isSpeaking, synthesisError } = storeToRefs(speechSynthesisStore)
+
+watch(recognitionError, (newValue) => {
+	if(newValue) {
+		$q.notify({
+			type: 'negative',
+			message: `${newValue}`
+		})
+	}
+})
+watch(synthesisError, (newValue) => {
+	if(newValue) {
+		$q.notify({
+			type: 'negative',
+			message: `${newValue}`
+		})
+	}
+})
+
+watch(isSpeaking, (newValue, oldValue) => {
+	if(oldValue && !newValue) {
+		speechRecognitionStore.start()
+	}
+})
+
+let timer = 0
+let time = ref(0)
+watch(isListening, (newValue, oldValue) => {
+	if(!oldValue && newValue) {
+		time.value = 0
+		timer = setInterval(() => {
+			time.value++
+		}, 100)
+	}
+	if(oldValue && !newValue) {
+		clearInterval(timer)
+		if(!transcript.value) {
+			$q.notify({
+				type: 'warning',
+				message: `Didn't hear. Try again`
+			})
+			return
+		}
+
+		const parsedTranscript = parseInt(transcript.value)
+		if(isNaN(parsedTranscript)) {
+			$q.notify({
+				type: 'warning',
+				message: `Incorrect «${transcript.value}». Try again`
+			})
+		} else {
+			answer.value = parsedTranscript
+			setTimeout(handleCheckButton, 1000)
+		}
+	}
+})
+
+const speech = (text: string) => {
+	speechRecognitionStore.stop()
+	speechSynthesisStore.speak(text)
+}
+const speechCurrent = () => {
+	speech(digitText.value)
+}
 
 const toggleMic = () => {
 	if(isListening.value) {
@@ -217,4 +252,5 @@ const toggleMic = () => {
 		speechRecognitionStore.start()
 	}
 }
+
 </script>

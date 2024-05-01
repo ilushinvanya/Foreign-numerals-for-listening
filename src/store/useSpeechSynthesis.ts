@@ -6,6 +6,7 @@ export const useSpeechSynthesis = defineStore('speechSynthesis', () => {
 	const settingsStore = useSettings()
 	const { outputLanguage } = storeToRefs(settingsStore)
 
+	const isInit = ref(false)
 	const isSpeaking = ref(false)
 	const error = ref<string | null>(null)
 
@@ -20,6 +21,7 @@ export const useSpeechSynthesis = defineStore('speechSynthesis', () => {
 
 		utterance.onstart = () => {
 			isSpeaking.value = true;
+			isInit.value = true;
 		};
 
 		utterance.onend = () => {
@@ -39,6 +41,7 @@ export const useSpeechSynthesis = defineStore('speechSynthesis', () => {
 
 	return {
 		isSpeaking,
+		isSynthesisInit: isInit,
 		synthesisError: error,
 		speak,
 		shutUp

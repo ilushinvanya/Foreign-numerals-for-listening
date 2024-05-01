@@ -78,21 +78,21 @@ import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
 import { useSettings } from '../store/useSettings'
 import { useSpeechRecognition } from '../store/useSpeechRecognition'
 import { useSpeechSynthesis } from '../store/useSpeechSynthesis'
-import { storeToRefs } from 'pinia';
+import { storeToRefs } from 'pinia'
 import { useQuasar } from 'quasar'
-import { useTimer } from '../hooks/useTimer';
+import { useTimer } from '../hooks/useTimer'
+import { useNotification } from '../hooks/useNotification'
 import {
 	mdiCheck,
 	mdiMicrophone,
 	mdiMicrophoneOff,
 	mdiCogs,
-	mdiAlertOutline,
-	mdiAlertDecagramOutline,
 	mdiVolumeHigh,
 	mdiVolumeLow
 } from '@mdi/js'
 
 const $q = useQuasar()
+const { setWarning, setSuccess, setError } = useNotification()
 
 // question
 const digit = ref(0)
@@ -136,11 +136,7 @@ const numberOfIncorrectAnswers = ref(0)
 const handleCheckButton = () => {
 	stopInterval()
 	if(check() === true) {
-		$q.notify({
-			icon: mdiCheck,
-			type: 'positive',
-			message: `Correctly «${digit.value}»`
-		})
+		setSuccess(`Correctly «${digit.value}»`)
 		score.value++
 		numberOfIncorrectAnswers.value = 0
 		allTests.value++
@@ -151,20 +147,12 @@ const handleCheckButton = () => {
 
 		if (numberOfIncorrectAnswers.value < 3) {
 			// неправильно, но можно повторить
-			$q.notify({
-				icon: mdiAlertOutline,
-				type: 'warning',
-				message: `Incorrect «${answer.value}». Try again`
-			})
+			setWarning(`Incorrect «${answer.value}». Try again`)
 			answer.value = null
 		}
 		else {
 			// непрвильно, ошибка
-			$q.notify({
-				icon: mdiAlertDecagramOutline,
-				type: 'negative',
-				message: `Wrong «${answer.value}». Correct answer is «${digit.value}»`
-			})
+			setError(`Wrong «${answer.value}». Correct answer is «${digit.value}»`)
 			numberOfIncorrectAnswers.value = 0
 
 			score.value--
@@ -193,18 +181,6 @@ const onClickWrongAnswer = (number: number) => {
 	answerInputEl.value?.focus()
 }
 
-// Init
-const runTest = () => {
-	answer.value = null
-	generate()
-	speech(digitText.value)
-	answerInputEl.value?.focus()
-}
-onMounted(runTest)
-onBeforeUnmount(() => {
-	speechRecognitionStore.stop()
-	speechSynthesisStore.shutUp()
-})
 
 // Recognition & Synthesis
 const speechRecognitionStore = useSpeechRecognition()
@@ -212,28 +188,24 @@ const toggleMic = speechRecognitionStore.toggleMic
 const { transcript, recognitionError, isListening } = storeToRefs(speechRecognitionStore)
 
 const speechSynthesisStore = useSpeechSynthesis()
-const { isSpeaking, synthesisError } = storeToRefs(speechSynthesisStore)
+const { isSpeaking, isSynthesisInit, synthesisError } = storeToRefs(speechSynthesisStore)
 
 watch(recognitionError, (newValue) => {
 	if(!voiceInput.value) return
 	if(newValue) {
-		$q.notify({
-			icon: mdiAlertDecagramOutline,
-			type: 'negative',
-			message: `${newValue}`
-		})
+		setError(`${newValue}`)
 	}
 })
 watch(synthesisError, (newValue) => {
 	if(newValue) {
-		$q.notify({
-			icon: mdiAlertDecagramOutline,
-			type: 'negative',
-			message: `${newValue}`
-		})
+		setError(`${newValue}`)
 	}
 })
-
+watch(isSynthesisInit, (newValue) => {
+	if(newValue) {
+		$q.loading.hide()
+	}
+})
 const { time, startInterval, stopInterval } = useTimer()
 watch(isSpeaking, (newValue, oldValue) => {
 	if(oldValue && !newValue) {
@@ -251,20 +223,12 @@ watch(isListening, (newValue, oldValue) => {
 	if(oldValue && !newValue) {
 		stopInterval()
 		if(!transcript.value) {
-			$q.notify({
-				icon: mdiAlertOutline,
-				type: 'warning',
-				message: `Didn't hear. Try again`
-			})
+			setWarning(`Didn't hear. Try again`)
 			return
 		}
 		const parsedTranscript = parseInt(transcript.value)
 		if(isNaN(parsedTranscript)) {
-			$q.notify({
-				icon: mdiAlertOutline,
-				type: 'warning',
-				message: `Incorrect «${transcript.value}». Try again`
-			})
+			setWarning(`Incorrect «${transcript.value}». Try again`)
 		} else {
 			answer.value = parsedTranscript
 			handleCheckButton()
@@ -279,5 +243,23 @@ const speech = (text: string) => {
 const speechCurrent = () => {
 	speech(digitText.value)
 }
+
+// Init
+const runTest = () => {
+	answer.value = null
+	generate()
+	speech(digitText.value)
+	answerInputEl.value?.focus()
+}
+onMounted(() => {
+	if(!isSynthesisInit.value) {
+		$q.loading.show()
+	}
+	runTest()
+})
+onBeforeUnmount(() => {
+	speechRecognitionStore.stop()
+	speechSynthesisStore.shutUp()
+})
 
 </script>

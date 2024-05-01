@@ -3,7 +3,10 @@
 		q-card.main-card(bordered)
 			q-card-section.flex.justify-between
 				div
-					.text-h6 {{ outputLanguage?.flag }} Testing
+					.text-h6
+						span {{ outputLanguage?.flag }}
+						span.q-px-sm Testing
+						span(v-if="voiceInput") {{ inputLanguage?.flag }}
 					.text-subtitle2 ⏱️️ {{ time / 10 }}
 				.flex.items-center
 					q-btn.q-mr-md(
@@ -20,7 +23,7 @@
 					round
 					:outline="isSpeaking"
 					:text-color="isSpeaking ? 'primary' : ''"
-					:icon="isSpeaking ? mdiVolumeHigh : mdiVolumeOff"
+					:icon="isSpeaking ? mdiVolumeHigh : mdiVolumeLow"
 					size="28px"
 					@click="speechCurrent"
 				)
@@ -77,6 +80,7 @@ import { useSpeechRecognition } from '../store/useSpeechRecognition'
 import { useSpeechSynthesis } from '../store/useSpeechSynthesis'
 import { storeToRefs } from 'pinia';
 import { useQuasar } from 'quasar'
+import { useTimer } from '../hooks/useTimer';
 import {
 	mdiCheck,
 	mdiMicrophone,
@@ -85,7 +89,7 @@ import {
 	mdiAlertOutline,
 	mdiAlertDecagramOutline,
 	mdiVolumeHigh,
-	mdiVolumeOff
+	mdiVolumeLow
 } from '@mdi/js'
 
 const $q = useQuasar()
@@ -95,12 +99,21 @@ const digit = ref(0)
 const digitText = computed(() => `${digit.value}`)
 
 const settingsStore = useSettings()
-const { min, max, outputLanguage, voiceInput } = storeToRefs(settingsStore)
+const { min, max, outputLanguage, inputLanguage, voiceInput } = storeToRefs(settingsStore)
 
+const totalPossibleValues = max.value - min.value + 1
+const alreadyDigit = ref<number[]>([])
+const isNoMoreOptions = computed(() => alreadyDigit.value.length === totalPossibleValues)
 const getRandomInt = (mn:number, mx:number): number => {
 	const min = Math.ceil(mn);
 	const max = Math.floor(mx);
-	return Math.floor(Math.random() * (max - min + 1)) + min;
+	const numb =  Math.floor(Math.random() * (max - min + 1)) + min;
+	if(alreadyDigit.value.includes(numb)){
+		if(isNoMoreOptions.value) alreadyDigit.value = []
+		else if(!isNoMoreOptions.value) return getRandomInt(mn, mx)
+	}
+	alreadyDigit.value.push(numb)
+	return numb
 }
 const generate = () => {
 	digit.value = getRandomInt(min.value, max.value);
@@ -121,6 +134,7 @@ const check = (): true | number => {
 }
 const numberOfIncorrectAnswers = ref(0)
 const handleCheckButton = () => {
+	stopInterval()
 	if(check() === true) {
 		$q.notify({
 			icon: mdiCheck,
@@ -130,7 +144,7 @@ const handleCheckButton = () => {
 		score.value++
 		numberOfIncorrectAnswers.value = 0
 		allTests.value++
-		runTest()
+		setTimeout(runTest, 2000)
 	}
 	else {
 		numberOfIncorrectAnswers.value++
@@ -194,6 +208,7 @@ onBeforeUnmount(() => {
 
 // Recognition & Synthesis
 const speechRecognitionStore = useSpeechRecognition()
+const toggleMic = speechRecognitionStore.toggleMic
 const { transcript, recognitionError, isListening } = storeToRefs(speechRecognitionStore)
 
 const speechSynthesisStore = useSpeechSynthesis()
@@ -219,24 +234,22 @@ watch(synthesisError, (newValue) => {
 	}
 })
 
+const { time, startInterval, stopInterval } = useTimer()
 watch(isSpeaking, (newValue, oldValue) => {
-	if(!voiceInput.value) return
 	if(oldValue && !newValue) {
+		if(!voiceInput.value) {
+			startInterval()
+			return
+		}
 		speechRecognitionStore.start()
 	}
 })
-
-let timer: number = 0
-let time = ref(0)
 watch(isListening, (newValue, oldValue) => {
 	if(!oldValue && newValue) {
-		time.value = 0
-		timer = window.setInterval(() => {
-			time.value++
-		}, 100)
+		startInterval()
 	}
 	if(oldValue && !newValue) {
-		clearInterval(timer)
+		stopInterval()
 		if(!transcript.value) {
 			$q.notify({
 				icon: mdiAlertOutline,
@@ -245,7 +258,6 @@ watch(isListening, (newValue, oldValue) => {
 			})
 			return
 		}
-
 		const parsedTranscript = parseInt(transcript.value)
 		if(isNaN(parsedTranscript)) {
 			$q.notify({
@@ -255,7 +267,7 @@ watch(isListening, (newValue, oldValue) => {
 			})
 		} else {
 			answer.value = parsedTranscript
-			setTimeout(handleCheckButton, 1000)
+			handleCheckButton()
 		}
 	}
 })
@@ -266,15 +278,6 @@ const speech = (text: string) => {
 }
 const speechCurrent = () => {
 	speech(digitText.value)
-}
-
-const toggleMic = () => {
-	if(isListening.value) {
-		speechRecognitionStore.stop()
-	}
-	else {
-		speechRecognitionStore.start()
-	}
 }
 
 </script>

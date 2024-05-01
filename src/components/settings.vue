@@ -52,12 +52,17 @@ import { useSettings, LANGUAGES } from '../store/useSettings'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 import LanguageSelect from './language-select.vue'
+import { useSpeechRecognition } from '../store/useSpeechRecognition';
+import { useSpeechSynthesis } from '../store/useSpeechSynthesis';
 
 const router = useRouter()
 const $q = useQuasar()
 
 const settingsStore = useSettings()
 const { min, max, outputLanguage, inputLanguage, isValid, voiceInput } = storeToRefs(settingsStore)
+
+const speechRecognitionStore = useSpeechRecognition()
+const speechSynthesisStore = useSpeechSynthesis()
 
 const start = () => {
 	router.push('/test')

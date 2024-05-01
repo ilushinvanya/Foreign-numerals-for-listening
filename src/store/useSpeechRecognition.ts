@@ -54,12 +54,22 @@ export const useSpeechRecognition = defineStore('speechRecognition', () => {
 		recognition.stop();
 	}
 
+	const toggleMic = () => {
+		if(isListening.value) {
+			stop()
+		}
+		else {
+			start()
+		}
+	}
+
 	return {
 		isListening,
 		transcript,
 		recognitionError: error,
 		start,
-		stop
+		stop,
+		toggleMic
 	}
 
 });

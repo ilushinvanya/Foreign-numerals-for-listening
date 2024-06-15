@@ -29,6 +29,7 @@
 				)
 				q-btn.q-ml-md(
 					v-if="voiceInput"
+					:disable="isSpeaking"
 					round
 					:outline="isListening"
 					:text-color="isListening ? 'primary' : ''"
@@ -64,6 +65,7 @@
 					q-chip(
 						v-for="n in sortedWrongAnswer"
 						clickable
+						:disable="isSpeaking"
 						@click="onClickWrongAnswer(n[0])"
 					)
 						q-avatar(
@@ -149,6 +151,7 @@ const handleCheckButton = () => {
 			// неправильно, но можно повторить
 			setWarning(`Incorrect «${answer.value}». Try again`)
 			answer.value = null
+			speechCurrent()
 		}
 		else {
 			// непрвильно, ошибка
@@ -229,6 +232,7 @@ watch(isListening, (newValue, oldValue) => {
 		const parsedTranscript = parseInt(transcript.value)
 		if(isNaN(parsedTranscript)) {
 			setWarning(`Incorrect «${transcript.value}». Try again`)
+			speechCurrent()
 		} else {
 			answer.value = parsedTranscript
 			handleCheckButton()

@@ -29,10 +29,6 @@ export const useSettings = defineStore('settings', () => {
     const min = ref(11)
     const max = ref(99)
 
-    const isValid = computed(() => {
-        return min.value < max.value;
-    })
-
     const getDefaultLanguage = (code: string) => {
         return LANGUAGES.find(lang => lang.code === code)
     }
@@ -48,5 +44,5 @@ export const useSettings = defineStore('settings', () => {
     };
 
 
-    return { isValid, voiceInput, outputLanguage, inputLanguage, min, max, Device }
+    return { voiceInput, outputLanguage, inputLanguage, min, max, Device }
 })

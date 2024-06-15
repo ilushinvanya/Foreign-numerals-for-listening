@@ -2,7 +2,7 @@
 .full-height.flex.justify-center.items-center
 	q-card.main-card(bordered)
 		q-card-section.flex.justify-between
-			div(class="text-h6") ⚙️ Settings
+			div(class="text-h6") Settings
 		q-separator(inset)
 		q-card-section
 			LanguageSelect(
@@ -20,56 +20,74 @@
 			)
 		q-separator(inset)
 		q-card-section
-			.row
-				.col.q-pr-md
-					q-input(
-						v-model.number="min"
-						type="number"
-						filled
-						dense
-						label="Minimum"
-						:rules="[validationRule]"
-						no-error-icon
-					)
-				.col
-					q-input(
-						v-model.number="max"
-						type="number"
-						filled
-						dense
-						label="Maximum"
-						:rules="[validationRule]"
-						no-error-icon
-					)
+			q-form(
+				ref="form"
+				@submit.prevent="start"
+			)
+				.row
+					.col.q-pr-md
+						q-input(
+							v-model.number="min"
+							type="number"
+							filled
+							dense
+							label="Minimum"
+							:rules="[required, moreZeroRule]"
+							no-error-icon
+						)
+					.col
+						q-input(
+							v-model.number="max"
+							type="number"
+							filled
+							dense
+							label="Maximum"
+							:rules="[required, maxMoreMin]"
+							no-error-icon
+						)
 		q-separator(inset)
 		q-card-section
-			q-btn(@click="start" :disable="!isValid") Save and Run
+			q-btn(@click="start") Save and Run
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
 import { storeToRefs } from 'pinia'
 import { useSettings, LANGUAGES } from '../store/useSettings'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
+import {useNotification} from "../hooks/useNotification";
 import LanguageSelect from './language-select.vue'
-import { useSpeechRecognition } from '../store/useSpeechRecognition';
-import { useSpeechSynthesis } from '../store/useSpeechSynthesis';
 
 const router = useRouter()
 const $q = useQuasar()
 
-const settingsStore = useSettings()
-const { min, max, outputLanguage, inputLanguage, isValid, voiceInput } = storeToRefs(settingsStore)
+const { setError } = useNotification()
 
-const speechRecognitionStore = useSpeechRecognition()
-const speechSynthesisStore = useSpeechSynthesis()
+const settingsStore = useSettings()
+const { min, max, outputLanguage, inputLanguage, voiceInput } = storeToRefs(settingsStore)
+
+const form = ref()
 
 const start = () => {
-	router.push('/test')
+	form.value.validate().then((success:boolean) => {
+		if (success) {
+			router.push('/test')
+		}
+		else {
+			setError('Validation error')
+		}
+	})
 }
 
-const validationRule = () => {
-	return isValid.value || 'The minimum must be less than the maximum'
+const maxMoreMin = () => {
+	return max.value > min.value || 'The maximum must be greater than the minimum'
+}
+const moreZeroRule = () => {
+	return min.value >= 0 || 'Field must be greater than 0'
+}
+const required = () => {
+	return !!min.value || 'Field required'
 }
 
 window.document.onload = () => {

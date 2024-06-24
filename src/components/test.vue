@@ -1,22 +1,32 @@
 <template lang="pug">
 .full-height.flex.justify-center.items-center
 		q-card.main-card(bordered)
-			q-card-section.flex.justify-between
-				div
-					.text-h6
-						span {{ outputLanguage?.flag }}
-						span.q-px-sm Testing
-						span(v-if="voiceInput") {{ inputLanguage?.flag }}
-					.text-subtitle2 ⏱️️ {{ time / 10 }}
-				.flex.items-center
-					q-btn.q-mr-md(
-						to="/"
-						:icon="mdiCogs"
-						round
-					)
-					div
-						div All tests: {{allTests}}
-						div Score: {{score}}
+			q-card-section.flex.justify-between.items-center
+				.text-h6.flex.items-end
+					div {{ outputLanguage?.flag }}
+					.q-px-sm Testing
+					div(v-if="voiceInput") {{ inputLanguage?.flag }}
+				q-separator(vertical)
+				.text-subtitle2 ⏱️️ {{ timer }}
+				q-separator(vertical)
+				div All tests: {{allTests}}
+				q-separator(vertical)
+				div Score: {{score}}
+			q-separator
+			.q-mx-md.flex.justify-between
+				q-btn(
+					:color="isNonStop ? 'primary' : 'default'"
+					no-caps
+					flat
+					label="Non-stop"
+					@click="isNonStop = !isNonStop"
+				)
+				q-btn.q-ml-md(
+					to="/"
+					flat
+					no-caps
+					label="Go to settings"
+				)
 			q-separator(inset)
 			q-card-section.flex.justify-center
 				q-btn(
@@ -51,10 +61,11 @@
 						q-btn(
 							no-caps
 							outline
-							color="green"
+							:color="checkBtnColor"
+							:icon="checkBtnIcon"
+							:label="checkBtnLabel"
 							@click="handleCheckButton"
-							:icon="mdiCheck"
-						) Check
+						)
 			q-separator(
 				v-if="sortedWrongAnswer.length"
 				inset
@@ -85,16 +96,19 @@ import { useQuasar } from 'quasar'
 import { useTimer } from '../hooks/useTimer'
 import { useNotification } from '../hooks/useNotification'
 import {
+	mdiAlertOutline,
 	mdiCheck,
 	mdiMicrophone,
 	mdiMicrophoneOff,
-	mdiCogs,
 	mdiVolumeHigh,
-	mdiVolumeLow
+	mdiVolumeLow,
+	mdiSendVariant
 } from '@mdi/js'
 
 const $q = useQuasar()
 const { setWarning, setSuccess, setError } = useNotification()
+
+const isNonStop = ref(true)
 
 // question
 const digit = ref(0)
@@ -128,6 +142,22 @@ const score = ref(0);
 
 const answer = ref<number | null>();
 const answerInputEl = ref();
+const isCorrect = ref<boolean | null>(null)
+const checkBtnColor = computed(() => {
+	if(isCorrect.value) return 'green'
+	else if(isCorrect.value === false) return 'red'
+	else return 'default'
+})
+const checkBtnIcon = computed(() => {
+	if(isCorrect.value) return mdiCheck
+	else if(isCorrect.value === false) return mdiAlertOutline
+	else return mdiSendVariant
+})
+const checkBtnLabel = computed(() => {
+	if(isCorrect.value) return 'Correct'
+	else if(isCorrect.value === false) return 'Incorrect'
+	else return 'Ok'
+})
 
 const check = (): true | number => {
 	const check = digit.value === answer.value;
@@ -138,6 +168,7 @@ const numberOfIncorrectAnswers = ref(0)
 const handleCheckButton = () => {
 	stopInterval()
 	if(check() === true) {
+		isCorrect.value = true
 		setSuccess(`Correctly «${digit.value}»`)
 		score.value++
 		numberOfIncorrectAnswers.value = 0
@@ -145,13 +176,16 @@ const handleCheckButton = () => {
 		setTimeout(runTest, 2000)
 	}
 	else {
+		isCorrect.value = false
 		numberOfIncorrectAnswers.value++
 
 		if (numberOfIncorrectAnswers.value < 3) {
 			// неправильно, но можно повторить
 			setWarning(`Incorrect «${answer.value}». Try again`)
 			answer.value = null
-			speechCurrent()
+			if(isNonStop.value) {
+				speechCurrent()
+			}
 		}
 		else {
 			// непрвильно, ошибка
@@ -190,6 +224,9 @@ const speechRecognitionStore = useSpeechRecognition()
 const toggleMic = speechRecognitionStore.toggleMic
 const { transcript, recognitionError, isListening } = storeToRefs(speechRecognitionStore)
 
+const { time, startInterval, stopInterval } = useTimer()
+const timer = computed(() => (time.value / 10).toFixed(1))
+
 const speechSynthesisStore = useSpeechSynthesis()
 const { isSpeaking, isSynthesisInit, synthesisError } = storeToRefs(speechSynthesisStore)
 
@@ -209,7 +246,7 @@ watch(isSynthesisInit, (newValue) => {
 		$q.loading.hide()
 	}
 })
-const { time, startInterval, stopInterval } = useTimer()
+
 watch(isSpeaking, (newValue, oldValue) => {
 	if(oldValue && !newValue) {
 		if(!voiceInput.value) {
@@ -227,12 +264,17 @@ watch(isListening, (newValue, oldValue) => {
 		stopInterval()
 		if(!transcript.value) {
 			setWarning(`Didn't hear. Try again`)
+			if(isNonStop.value) {
+				runTest()
+			}
 			return
 		}
 		const parsedTranscript = parseInt(transcript.value)
 		if(isNaN(parsedTranscript)) {
 			setWarning(`Incorrect «${transcript.value}». Try again`)
-			speechCurrent()
+			if(isNonStop.value) {
+				speechCurrent()
+			}
 		} else {
 			answer.value = parsedTranscript
 			handleCheckButton()
@@ -241,6 +283,7 @@ watch(isListening, (newValue, oldValue) => {
 })
 
 const speech = (text: string) => {
+	isCorrect.value = null
 	speechRecognitionStore.stop()
 	speechSynthesisStore.speak(text)
 }

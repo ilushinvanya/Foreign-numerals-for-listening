@@ -2,7 +2,7 @@ import { ref } from 'vue';
 
 export const useTimer = () => {
     let timer: number = 0
-    let time = ref(0)
+    const time = ref(0)
 
     const startInterval = () => {
         stopInterval()
